@@ -11,11 +11,8 @@ struct AppState {
     webhooks: Arc<RwLock<Vec<webhook::WebhookAlert>>>,
 }
 
-#[tokio::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    #[cfg(debug_assertions)]
-    create_dev_webhook().await;
-
     // any config will go in .env
     dotenvy::dotenv().ok();
     println!("dotenv");
@@ -43,18 +40,4 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", server_port))?
     .run()
     .await
-}
-
-#[cfg(debug_assertions)]
-async fn create_dev_webhook() {
-    let output = vec![webhook::WebhookAlert {
-        url: "https://discord.com/api/webhooks/1076360611757305868/F88jTeNbtjAjhmPCgq_4ATspyN4k2t2v8LQnszXyiGTzeYHpPOf2slrWwX6lktM0YdXT".to_string(),
-        nickname: "dev".to_string(),
-        username: "Persefone".to_string(),
-    }];
-
-    let mut file = File::create("./webhooks.json").expect("could not create");
-
-    let json_string = serde_json::to_string_pretty(&output).unwrap();
-    file.write_all(json_string.as_bytes()).expect("could not write");
 }
