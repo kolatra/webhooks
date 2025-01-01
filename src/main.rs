@@ -5,9 +5,14 @@ mod webhook;
 
 #[derive(clap::Parser, Debug)]
 struct Args {
+    #[arg(short, long)]
     wh_name: String,
+    #[arg(short, long)]
     content: String,
-    username: Option<String>
+    #[arg(short, long)]
+    username: Option<String>,
+    #[arg(short, long)]
+    ping: Option<bool>
 }
 
 #[tokio::main]
@@ -20,16 +25,18 @@ async fn main() -> anyhow::Result<()> {
     println!("dotenv");
 
     // load webhooks from json file
-    let cache = cache::JsonLoader::new(&std::env::var("CACHE").unwrap())?;
+    let mut cache = cache::JsonLoader::new(&std::env::var("CACHE").unwrap())?;
 
-    for mut wh in cache.loaded {
-        if wh.get_nickname().eq(&args.wh_name) {
+    let wh_opt = cache.loaded.iter_mut().filter(|wh| wh.get_nickname().eq(&args.wh_name)).next();
+
+    match wh_opt {
+        Some(webhook) => {
             if let Some(user) = &args.username {
-                wh.set_username(user.clone());
+                webhook.set_username(user);
             }
-
-            wh.send_alert(&args.content).await;
-        }
+            webhook.send_alert(&args.content, args.ping.is_some()).await;
+        },
+        None => anyhow::bail!("Webhook was not found!")
     }
 
     Ok(())
