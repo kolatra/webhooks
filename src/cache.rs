@@ -8,8 +8,8 @@ pub struct JsonLoader {
 }
 
 impl JsonLoader {
-    pub async fn new(file_input: &str) -> tokio::io::Result<Self> {
-        let raw = tokio::fs::read_to_string(file_input).await?;
+    pub fn new(file_input: &str) -> std::io::Result<Self> {
+        let raw = std::fs::read_to_string(file_input)?;
         let loaded: Vec<WebhookAlert> = serde_json::from_str(&raw)?;
 
         Ok(JsonLoader {
