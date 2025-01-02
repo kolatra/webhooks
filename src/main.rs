@@ -6,7 +6,7 @@ mod webhook;
 #[derive(clap::Parser, Debug)]
 struct Args {
     #[arg(short, long)]
-    wh_name: String,
+    wh_name: Option<String>,
     #[arg(short, long)]
     content: String,
     #[arg(short, long)]
@@ -18,7 +18,6 @@ struct Args {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let args = dbg!(args);
 
     // any config will go in .env
     dotenvy::dotenv().ok();
@@ -27,7 +26,8 @@ async fn main() -> anyhow::Result<()> {
     // load webhooks from json file
     let mut cache = cache::JsonLoader::new(&std::env::var("CACHE").unwrap())?;
 
-    let wh_opt = cache.loaded.iter_mut().filter(|wh| wh.get_nickname().eq(&args.wh_name)).next();
+    let wh_name = args.wh_name.unwrap_or(std::env::var("DEFAULT_WH").unwrap());
+    let wh_opt = cache.loaded.iter_mut().filter(|wh| wh.get_nickname().eq(&wh_name)).next();
 
     match wh_opt {
         Some(webhook) => {
