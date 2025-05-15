@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <curl/curl.h>
 
-#include "cJson/cJSON.h"
+#include "cJSON/cJSON.h"
 
 typedef struct {
     char *content;
